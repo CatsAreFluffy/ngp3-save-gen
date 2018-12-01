@@ -11,57 +11,82 @@
 			save.resets=+getParam("dimboosts")
 			save.galaxies=+getParam("galaxies")
 			save.infinityPoints=getParam("ip")
-			var infinities=+getParam("infinities")
-			save.infinitied=infinities
-			if(infinities>0){
+			save.infinitied=+getParam("infinities")
+			if(save.infinitied>0){
 				save.achievements.push("r21")
 			}
-			if(infinities>=10){
+			if(save.infinitied>=10){
 				save.achievements.push("r33")
 			}
-			var challenges=JSON.parse(getParam("challenges"))
-			var challengesCompleted=0
-			for(var i=0;i<challenges.length;i++){
-				if(challenges[i]){
-					save.challenges.push("challenge"+(i+1))
-					challengesCompleted++
-				}
-			}
-			if(challengesCompleted>=2){
-				save.achievements.push("r47")
-			}
-			if(challengesCompleted>=12){
-				save.achievements.push("r48")
-			}
-			var challengeTimes=JSON.parse(getParam("challengeTimes"))
-			for(var i=0;i<challenges.length;i++){
-				if(challenges[i]){
-					challengeTimes[i]*=10
-				}else{
-					challengeTimes[i]=26784000
-				}
-			}
-			if(challenges[0]){
-				save.bestInfinityTime=challengeTimes[0]*10
-			}
-			if(challengeTimes[0]<72000){
-				save.achievements.push("r37")
-			}
-			if(challengeTimes[0]<6000){
-				save.achievements.push("r54")
-			}
-			if(challengeTimes[0]<600){
-				save.achievements.push("r55")
-			}
-			save.challengeTimes=challengeTimes
+			loadChallenges(save)
 			save.totalTimePlayed=36000*getParam("time-h")+864000*getParam("time-d")
 			save.thisEternity=save.totalTimePlayed
-			if(!challenges[0]){
+			if(!getParam("infinities")){
 				save.thisInfinityTime=save.totalTimePlayed
 			}
+			break
+		case "break":
+			save.infinityPoints=getParam("ip")
+			save.infinitied=+getParam("infinities")
+			if(save.infinitied>0){
+				save.achievements.push("r21")
+			}
+			if(save.infinitied>=10){
+				save.achievements.push("r33")
+			}
+			loadChallenges(save)
+			save.totalTimePlayed=36000*getParam("time-h")+864000*getParam("time-d")
+			save.thisEternity=save.totalTimePlayed
+			if(!getParam("infinities")){
+				save.thisInfinityTime=save.totalTimePlayed
+			}
+			for(var i=0;i<getParam("maxInfDim");i++){
+				save.infDimensionsUnlocked[i]=true
+			}
+			break
 		}
 		save.lastUpdate=Date.now()
 		document.getElementById("output").value=btoa(JSON.stringify(save))
+	}
+	function loadChallenges(save){
+		var challenges=JSON.parse(getParam("challenges"))
+		var challengesCompleted=0
+		var challengeIds=[1,2,3,8,6,10,9,11,5,4,12,7]
+		for(var i=0;i<challenges.length;i++){
+			if(challenges[i]){
+				save.challenges.push("challenge"+challengeIds[i])
+				challengesCompleted++
+			}
+		}
+		if(challengesCompleted>=2){
+			save.achievements.push("r47")
+		}
+		if(challengesCompleted>=12){
+			save.achievements.push("r48")
+		}
+		var challengeTimes=JSON.parse(getParam("challengeTimes"))
+		for(var i=0;i<challenges.length;i++){
+			if(challenges[i]){
+				challengeTimes[i]*=10
+			}else{
+				challengeTimes[i]=26784000
+			}
+		}
+		for(var i=0;i<challenges.length;i++){
+			save.challengeTimes[challengeIds[i]]=challengeTimes[i]
+		}
+		if(challenges[0]){
+			save.bestInfinityTime=challengeTimes[0]*10
+		}
+		if(challengeTimes[0]<72000){
+			save.achievements.push("r37")
+		}
+		if(challengeTimes[0]<6000){
+			save.achievements.push("r54")
+		}
+		if(challengeTimes[0]<600){
+			save.achievements.push("r55")
+		}
 	}
 	function getParam(key){
 		return document.getElementById(currentTabName+"-"+key).value
@@ -83,6 +108,7 @@
 </head>
 <body onload="load()">
 <button onclick="show('preBreak')">Pre-break</button>
+<button onclick="show('break')">Post-break</button>
 <div id="tab-preBreak" style="display: none">
 	Antimatter: <input id="preBreak-antimatter" value="10"><br>
 	Dimension Shifts/Boosts: <input id="preBreak-dimboosts" value="0"><br>
@@ -93,6 +119,15 @@
 	Challenge completion times (s): <input id="preBreak-challengeTimes" value="[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]"><br>
 	Time played (h): <input id="preBreak-time-h" value="0"><br>
 	Time played (d): <input id="preBreak-time-d" value="0"><br>
+</div>
+<div id="tab-break" style="display: none">
+	Infinity Points: <input id="break-ip" value="1e4"><br>
+	Infinities: <input id="break-infinities" value="1e3"><br>
+	Challenge completions: <input id="break-challenges" value="[1,1,1,1,1,1,1,1,0,1,1,1]"><br>
+	Challenge completion times (s): <input id="break-challengeTimes" value="[1,2,2,2,2,2,2,2,-1,2,2,2]"><br>
+	Time played (h): <input id="break-time-h" value="0"><br>
+	Time played (d): <input id="break-time-d" value="0"><br>
+	Infinity Dimensions unlocked: <input id="break-maxInfDim" value="0">
 </div>
 <button onclick="generate()">Generate!</button>
 <textarea id="output"></textarea>
